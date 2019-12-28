@@ -66,8 +66,8 @@ namespace PCManagerGUI
 		static void OnProcessExit(object sender, EventArgs e)
 		{
 			try {
-				System.ServiceProcess.ServiceController service =
-					new System.ServiceProcess.ServiceController("PCService");
+				var service =
+					new System.ServiceProcess.ServiceController("PCManagerService");
 				service.Stop();
 				service.WaitForStatus(System.ServiceProcess.ServiceControllerStatus.Stopped);
 			} catch { }

@@ -11,8 +11,8 @@ namespace PCManagerGUI
 {
 	public partial class MainFm : Form
 	{
+#region Imports
 
-		#region Imports
 		[DllImport("user32")]
 		public static extern void LockWorkStation();
 
@@ -26,25 +26,24 @@ namespace PCManagerGUI
 		private const int APPCOMMAND_VOLUME_UP = 0xA0000;
 		private const int APPCOMMAND_VOLUME_DOWN = 0x90000;
 		private const int WM_APPCOMMAND = 0x319;
-		#endregion
+
+#endregion
 
 		private string[] args;
 		public Soubor ServerLog { get; private set; }
 		public Soubor ToDo { get; private set; }
 		public Soubor Log { get; private set; }
-		public string ServiceName = @"PCService";
+		public string ServiceName = @"PCManagerService";
 
-		public MainFm(string[] Parametry) {
+		public MainFm(string[] parametry)
+		{
 			InitializeComponent();
 			ToDo = new Soubor(@"C:\temp\", "ToDo.txt", false);
 			ServerLog = new Soubor(@"C:\temp\", "ServerLog.txt", true);
 			Log = new Soubor(@"C:\temp\", "Log.txt", false);
 			Log.Vlozit("Všechny soubory vytvořeny/načteny");
-			if (Parametry != null && Parametry.Length > 0) {
-				string argumenty = "";
-				foreach (string a in Parametry) {
-					argumenty += a + ", ";
-				}
+			if (parametry != null && parametry.Length > 0) {
+				var argumenty = string.Join(", ", parametry);
 				Log.Vlozit($"Pokus o spuštění programu s následujícími paramatry: {argumenty}");
 			}
 			CheckServiceTimer.Enabled = true;
@@ -57,7 +56,8 @@ namespace PCManagerGUI
 			CheckService();
 		}
 
-		public void CheckService() {
+		public void CheckService()
+		{
 			ServiceController controller = new ServiceController(ServiceName);
 			if (controller.Status == ServiceControllerStatus.Stopped) {
 				LblActive.ForeColor = Color.Red;
@@ -70,12 +70,14 @@ namespace PCManagerGUI
 			}
 		}
 
-		public void NIcon_BalloonTipClicked(object sender, EventArgs e) {
+		public void NIcon_BalloonTipClicked(object sender, EventArgs e)
+		{
 			ServerLog.Vlozit("Přikaz zrušen");
 			Log.Vlozit("Příchozí příkaz byl zrušen uživatelem");
 		}
 
-		private void CheckAndDo() {
+		private void CheckAndDo()
+		{
 			if (args.Length <= 0 || args[0] == "") {
 				return;
 			}
@@ -96,33 +98,31 @@ namespace PCManagerGUI
 					BShow("Restartovat", 1000, true);
 					break;
 				case "mute":
-					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr) APPCOMMAND_VOLUME_MUTE);
 					Log.Vlozit("Zvuky vypnuty");
 					break;
 				case "up":
-					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr)APPCOMMAND_VOLUME_UP);
+					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr) APPCOMMAND_VOLUME_UP);
 					Log.Vlozit("Hlasitost zvýšena");
 					break;
 				case "down":
-					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-					Log.Vlozit("Počítač snížena");
+					SendMessageW(Handle, WM_APPCOMMAND, Handle, (IntPtr) APPCOMMAND_VOLUME_DOWN);
+					Log.Vlozit("Hlasitost snížena");
 					break;
 				case "hide":
 					CheckServiceTimer.Enabled = false;
 					ReadTimer.Enabled = false;
 					break;
 				default:
-					string poslat = "";
-					foreach (string a in args) {
-						poslat = $"{poslat} {a}";
-					}
+					string poslat = string.Join(" ", args);
 					BShow($"Příchozí zpráva: {poslat}", 1000, false);
 					Log.Vlozit($"Zobrazena následující zpráva: {poslat}");
 					break;
 			}
 		}
 
-		public void BShow(string text, int cas, bool prikaz) {
+		public void BShow(string text, int cas, bool prikaz)
+		{
 			if (prikaz) {
 				NIcon.BalloonTipText = $"{text} \r\nKlikni pro přerušení!";
 			} else {
@@ -131,7 +131,8 @@ namespace PCManagerGUI
 			NIcon.ShowBalloonTip(cas);
 		}
 
-		public void NIcon_MouseClick(object sender, MouseEventArgs e) {
+		public void NIcon_MouseClick(object sender, MouseEventArgs e)
+		{
 			if (e.Button == MouseButtons.Right) {
 				CxMenu.Show(Control.MousePosition);
 			} else if (e.Button == MouseButtons.Left) {
@@ -141,13 +142,15 @@ namespace PCManagerGUI
 			}
 		}
 
-		private void EndApp_Click(object sender, EventArgs e) {
+		private void EndApp_Click(object sender, EventArgs e)
+		{
 			Log.Vlozit("Aplikace ukončena");
 			Application.Exit();
 			Environment.Exit(0);
 		}
 
-		private void EndService_click(object sender, EventArgs e) {
+		private void EndService_click(object sender, EventArgs e)
+		{
 			Thread.Sleep(2000);
 			if (LblActive.Text == "Neaktivní") {
 				BShow("Služba je již zastavena", 200, false);
@@ -164,19 +167,22 @@ namespace PCManagerGUI
 			Log.Vlozit("Čtění příkazů pozastaveno");
 		}
 
-		private void Show_Click(object sender, EventArgs e) {
+		private void Show_Click(object sender, EventArgs e)
+		{
 			Show();
 			CheckServiceTimer.Enabled = true;
 			ReadTimer.Enabled = true;
 		}
 
-		private void About_Click(object sender, EventArgs e) {
+		private void About_Click(object sender, EventArgs e)
+		{
 			OProgramu About = new OProgramu();
 			About.Show();
 			Log.Vlozit("Zobrazeno okno 'O programu'");
 		}
 
-		private void MainFm_FormClosing(object sender, FormClosingEventArgs e) {
+		private void MainFm_FormClosing(object sender, FormClosingEventArgs e)
+		{
 			if (e.CloseReason == CloseReason.UserClosing) {
 				Hide();
 				e.Cancel = true;
@@ -184,14 +190,16 @@ namespace PCManagerGUI
 			}
 		}
 
-		private void CheckServiceTimer_Tick(object sender, EventArgs e) {
+		private void CheckServiceTimer_Tick(object sender, EventArgs e)
+		{
 			if (WindowState == FormWindowState.Minimized) {
 				CheckServiceTimer.Enabled = false;
 			}
 			CheckService();
 		}
 
-		private void MainFm_Resize(object sender, EventArgs e) {
+		private void MainFm_Resize(object sender, EventArgs e)
+		{
 			if (WindowState == FormWindowState.Minimized) {
 				CheckServiceTimer.Enabled = false;
 				Log.Vlozit("Kontolování služby pozastaveno");
@@ -201,7 +209,8 @@ namespace PCManagerGUI
 			}
 		}
 
-		private void ReadTimer_Tick(object sender, EventArgs e) {
+		private void ReadTimer_Tick(object sender, EventArgs e)
+		{
 			string[] precteno = ToDo.VratS();
 			if (precteno.Length < 1) {
 				return;
@@ -212,7 +221,8 @@ namespace PCManagerGUI
 			Log.Vlozit("Soubor ToDo.txt vymazán");
 		}
 
-		private void ChBox_AutoLoad_CheckedChanged(object sender, EventArgs e) {
+		private void ChBox_AutoLoad_CheckedChanged(object sender, EventArgs e)
+		{
 			if (ChBox_AutoLoad.Checked) {
 				VypisTimer.Enabled = true;
 				return;
@@ -220,20 +230,23 @@ namespace PCManagerGUI
 			VypisTimer.Enabled = false;
 		}
 
-		private void VypisTimer_Tick(object sender, EventArgs e) {
+		private void VypisTimer_Tick(object sender, EventArgs e)
+		{
 			TxtLog.Clear();
 			foreach (string a in ServerLog.VratS()) {
 				TxtLog.AppendText(a + Environment.NewLine);
 			}
 		}
 
-		private void Btn_End_Click(object sender, EventArgs e) {
+		private void Btn_End_Click(object sender, EventArgs e)
+		{
 			Log.Vlozit("Žádost o celkové zastavení");
 			EndService_click(sender, e);
 			EndApp_Click(sender, e);
 		}
 
-		private void NIcon_BalloonTipClosed(object sender, EventArgs e) {
+		private void NIcon_BalloonTipClosed(object sender, EventArgs e)
+		{
 			if (args == null || args.Length <= 0) {
 				return;
 			}
@@ -263,7 +276,8 @@ namespace PCManagerGUI
 			}
 		}
 
-		private void Btn_ZapVyp_Click(object sender, EventArgs e) {
+		private void Btn_ZapVyp_Click(object sender, EventArgs e)
+		{
 			ServiceController controller = new ServiceController(ServiceName);
 			if (controller.Status == ServiceControllerStatus.Running) {
 				EndService_click(sender, e);
@@ -278,9 +292,9 @@ namespace PCManagerGUI
 			}
 		}
 
-		private void MainFm_FormClosed(object sender, FormClosedEventArgs e) {
+		private void MainFm_FormClosed(object sender, FormClosedEventArgs e)
+		{
 			NIcon.Visible = false;
 		}
-
 	}
 }

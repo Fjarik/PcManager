@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Configuration.Install;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 
 namespace PCManagerSluzba
@@ -8,19 +11,22 @@ namespace PCManagerSluzba
 	{
 		static void Main(params string[] args)
 		{
-			var service = new PCService();
+			var service = new PCManagerService();
 
-			if (Environment.UserInteractive) {
-				service.StartDebug();
-				Console.WriteLine("Press any key to stop program");
-				Console.Read();
-				service.Stop();
+			var parameters = args.Where(x => x.StartsWith("--")).ToList();
+			if (parameters.Any(x => x == "--uninstall")) {
+				EventLog.DeleteEventSource("PCManager");
+				ManagedInstallerClass.InstallHelper(new[] {"/u", Assembly.GetExecutingAssembly().Location});
+				return;
+			}
+			if (parameters.Any(x => x == "--install")) {
+				ManagedInstallerClass.InstallHelper(new[] {Assembly.GetExecutingAssembly().Location});
 				return;
 			}
 
-			if (string.Equals(args.FirstOrDefault(), "debug", StringComparison.OrdinalIgnoreCase)) {
+			if (args.Any(x => x == "debug")) {
 				service.StartDebug();
-				System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+				return;
 			}
 
 			ServiceBase.Run(service);

@@ -88,11 +88,11 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
-    <Compile Include="PCService.cs">
+    <Compile Include="PCManagerService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PCService.Designer.cs">
-      <DependentUpon>PCService.cs</DependentUpon>
+    <Compile Include="PCManagerService.Designer.cs">
+      <DependentUpon>PCManagerService.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -103,6 +103,9 @@
     <None Include="PokusnyKlic.snk" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="PCManagerService.resx">
+      <DependentUpon>PCManagerService.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </EmbeddedResource>

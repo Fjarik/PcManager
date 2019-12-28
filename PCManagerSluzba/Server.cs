@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
+using System.Linq;
 using System.ServiceProcess;
 using Microsoft.Win32;
 using KnihovnaSouboru;
@@ -20,31 +21,33 @@ namespace PCManagerSluzba
 		private readonly Thread _listeningThreat;
 		private TcpListener _listener;
 		private readonly List<Socket> _clients = new List<Socket>();
+		private readonly EventLog _logger;
 
-		public Soubor ToDo { get; }
-		public Soubor ServerLog { get; }
+		//public Soubor ToDo { get; }
+		//public Soubor ServerLog { get; }
 		public Soubor MacAdresy { get; }
-		public Soubor Log { get; }
+		//public Soubor Log { get; }
 
 		private string AppData => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-		public Server()
+		public Server(EventLog logger)
 		{
+			_logger = logger;
 			/*OvereneMac.Add("02:00:00:00:00:01");
 			OvereneMac.Add("48-45-20-B9-53-12");
 			OvereneMac.Add("2C:59:8A:57:42:8F");*/
-			string toDoLoc = "";
-			string serverLogLoc = "";
-			string logLoc = "";
+			//string toDoLoc = "";
+			//string serverLogLoc = "";
+			//string logLoc = "";
 
-			RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Opencube\PCManager\");
+			RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opencube\PCManager", true);
 			if (key != null) {
 				try {
 					key.SetValue("ServiceVersion", Verze);
 
-					toDoLoc = key.GetValue("Todo").ToString();
-					serverLogLoc = key.GetValue("ServerLog").ToString();
-					logLoc = key.GetValue("Log").ToString();
+					//toDoLoc = key.GetValue("Todo").ToString();
+					//serverLogLoc = key.GetValue("ServerLog").ToString();
+					//logLoc = key.GetValue("Log").ToString();
 					key.Close();
 				} catch {
 					throw new Exception("Nelze přečíst záznamy v registrech");
@@ -54,13 +57,13 @@ namespace PCManagerSluzba
 					Exception("Nelze najít nezbytné záznamy v registrech! \n Nejdříve spusťte aplikaci PCManager.exe");
 			}
 			MacAdresy = new Soubor(@"C:\temp\", "Mac.txt", false);
-			ToDo = new Soubor(toDoLoc, true);
-			ServerLog = new Soubor(serverLogLoc, false);
-			Log = new Soubor(logLoc, false);
-			Log.Vlozit("Soubor úspěšně načteny");
+			// To Do = new Soubor(toDoLoc, true);
+			//ServerLog = new Soubor(serverLogLoc, false);
+			//Log = new Soubor(logLoc, false);
+			//Log.Vlozit("Soubor úspěšně načteny");
 
 			_overeneMac = MacAdresy.VratL();
-			Log.Vlozit("Ověřené MAC adresy úspěšně načteny");
+			_logger.WriteEntry("Ověřené MAC adresy úspěšně načteny");
 
 			_listeningThreat = new Thread(ListeningThread);
 		}
@@ -72,13 +75,13 @@ namespace PCManagerSluzba
 
 		public void Stop()
 		{
-			ServerLog.Vlozit("Vypínání serveru!");
+			_logger.WriteEntry("Vypínání serveru!");
 			foreach (Socket s in _clients) {
 				s.Close();
 			}
 			_clients.Clear();
 			_listeningThreat.Abort();
-			Log.Vlozit("Server vypnut");
+			_logger.WriteEntry("Server vypnut");
 		}
 
 		public void ListeningThread()
@@ -90,23 +93,22 @@ namespace PCManagerSluzba
 
 			try {
 				_listener.Start();
-				ServerLog.Vlozit("Server spuštěn!");
-				Log.Vlozit("Server spuštěn");
+				_logger.WriteEntry("Server spuštěn!");
 			} catch (Exception ex) {
-				Log.Vlozit($"Chyba: {ex.ToString()}");
+				_logger.WriteEntry($"Chyba: {ex}");
 				_listeningThreat.Abort();
 				ProjectInstaller po = new ProjectInstaller();
 				po.serviceController1.Stop();
 				po.serviceController1.WaitForStatus(ServiceControllerStatus.Stopped);
 				throw new Exception("Nepodařilo se spustit server");
 			}
-			ServerLog.Vlozit($"Naslouchání: {ip}:{port}");
-			Log.Vlozit($"Naslouchání: {ip}:{port}");
+			_logger.WriteEntry($"Naslouchání: {ip}:{port}");
+			//Log.Vlozit($"Naslouchání: {ip}:{port}");
 			while (true) {
 				if (_listener.Pending()) {
 					_clients.Add(_listener.AcceptSocket());
-					ServerLog.Vlozit("Klient připojen!");
-					Log.Vlozit("Klient připojen");
+					_logger.WriteEntry("Klient připojen!");
+					//Log.Vlozit("Klient připojen");
 				}
 
 				try {
@@ -118,12 +120,10 @@ namespace PCManagerSluzba
 						}
 					}
 					Thread.Sleep(30);
-#pragma warning disable CS0168 // Variable is declared but never used
-				} catch (InvalidOperationException ex) { } catch {
-#pragma warning restore CS0168 // Variable is declared but never used
+				} catch (InvalidOperationException) { } catch {
 					_clients.Clear();
-					ServerLog.Vlozit("Všichni klienti byli násilně odpojeni!");
-					Log.Vlozit("Všichni klienti byli násilně odpojeni!");
+					_logger.WriteEntry("Všichni klienti byli násilně odpojeni!");
+					//Log.Vlozit("Všichni klienti byli násilně odpojeni!");
 				}
 			}
 		}
@@ -142,14 +142,14 @@ namespace PCManagerSluzba
 			} catch {
 				RemoveClientInfo(s);
 				s.Close();
-				ServerLog.Vlozit("Klient násilně odpojen!");
-				Log.Vlozit("Klient násilně odpojen!");
+				_logger.WriteEntry("Klient násilně odpojen!");
+				//Log.Vlozit("Klient násilně odpojen!");
 				return;
 			}
 			if (prichoziText.Length == 0 || prichoziText.ToLower() == "dc" || prichoziText.ToLower() == "disconnect") {
 				RemoveClientInfo(s);
-				ServerLog.Vlozit("Klient odpojen!");
-				Log.Vlozit("Klient násilně odpojen!");
+				_logger.WriteEntry("Klient odpojen!");
+				//Log.Vlozit("Klient násilně odpojen!");
 				return;
 			}
 			CheckAndDo(prichoziText);
@@ -158,8 +158,8 @@ namespace PCManagerSluzba
 		private void CheckAndDo(string vstup)
 		{
 			if (!vstup.Contains(";")) {
-				Log.Vlozit($"Příchozí text: {vstup}");
-				ToDo.VlozitBezDate(vstup);
+				_logger.WriteEntry($"Příchozí text: {vstup}");
+				//ToDo.VlozitBezDate(vstup);
 				return;
 			}
 			string[] casti = vstup.Split(';');
@@ -167,15 +167,15 @@ namespace PCManagerSluzba
 				return;
 			}
 			if (!_overeneMac.Contains(casti[0])) {
-				Log.Vlozit($"Zablokován pokus o připojení z neověřené Mac Adresy, Příchozí text {vstup}");
+				_logger.WriteEntry($"Zablokován pokus o připojení z neověřené Mac Adresy, Příchozí text {vstup}");
 				return;
 			}
 			if (casti[1] != "A3b7h6!(q1") {
-				Log.Vlozit($"Zablokován pokus o připojení z důvodu nesprávného hesla, Příchozí text {vstup}");
+				_logger.WriteEntry($"Zablokován pokus o připojení z důvodu nesprávného hesla, Příchozí text {vstup}");
 				return;
 			}
-			Log.Vlozit($"Příchozí příkaz od {casti[0]}: {casti[2]}");
-			ToDo.VlozitBezDate(casti[2].ToLower());
+			_logger.WriteEntry($"Příchozí příkaz od {casti[0]}: {casti[2]}");
+			//ToDo.VlozitBezDate(casti[2].ToLower());
 		}
 
 		private void RemoveClientInfo(Socket socket)
@@ -191,16 +191,21 @@ namespace PCManagerSluzba
 
 		public string GetLocalIPv4()
 		{
-			foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces()) {
-				if ((item.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-					 item.NetworkInterfaceType == NetworkInterfaceType.Ethernet) &&
-					item.OperationalStatus == OperationalStatus.Up) {
-					foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses) {
-						if (ip.Address.AddressFamily == AddressFamily.InterNetwork) {
-							return ip.Address.ToString();
-						}
-					}
-				}
+			foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces()
+															  .Where(x => x.OperationalStatus == OperationalStatus.Up)
+															  .Where(x => x.NetworkInterfaceType ==
+																		  NetworkInterfaceType.Wireless80211 ||
+																		  x.NetworkInterfaceType ==
+																		  NetworkInterfaceType.Ethernet)
+															  // Not virtual
+															  .Where(x => x.GetIPProperties().GatewayAddresses.Any())
+			) {
+				return item.GetIPProperties()
+						   .UnicastAddresses
+						   .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork)
+						   .Select(x => x.Address)
+						   .FirstOrDefault()
+						   ?.ToString();
 			}
 			return string.Empty;
 		}

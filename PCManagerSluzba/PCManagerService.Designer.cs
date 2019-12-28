@@ -1,6 +1,6 @@
 ﻿namespace PCManagerSluzba
 {
-	partial class PCService
+	partial class PCManagerService
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -25,10 +25,18 @@
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			components = new System.ComponentModel.Container();
-			this.ServiceName = "PCService";
+			this.mainEventLog = new System.Diagnostics.EventLog();
+			((System.ComponentModel.ISupportInitialize)(this.mainEventLog)).BeginInit();
+			// 
+			// PCManagerService
+			// 
+			this.ServiceName = "PCManagerService";
+			((System.ComponentModel.ISupportInitialize)(this.mainEventLog)).EndInit();
+
 		}
 
 		#endregion
+
+		private System.Diagnostics.EventLog mainEventLog;
 	}
 }

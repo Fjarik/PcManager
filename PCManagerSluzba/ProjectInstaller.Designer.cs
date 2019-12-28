@@ -37,9 +37,11 @@
 			// 
 			// Installer1
 			// 
+			this.Installer1.DelayedAutoStart = true;
 			this.Installer1.Description = "Hlavní služba pro PCManager server © Opencube, Autor: Jiří Falta";
 			this.Installer1.DisplayName = "PCManager Služba";
-			this.Installer1.ServiceName = "PCService";
+			this.Installer1.ServiceName = "PCManagerService";
+			this.Installer1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
 			// 
 			// ProjectInstaller
 			// 
