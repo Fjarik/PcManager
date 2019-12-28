@@ -62,9 +62,11 @@ namespace PCManagerGUI
 			if (controller.Status == ServiceControllerStatus.Stopped) {
 				LblActive.ForeColor = Color.Red;
 				LblActive.Text = "Neaktivní";
+				Btn_ZapVyp.Text = "Zapnout";
 			} else if (controller.Status == ServiceControllerStatus.Running) {
 				LblActive.ForeColor = Color.Green;
 				LblActive.Text = "Aktivní";
+				Btn_ZapVyp.Text = "Vypnout";
 			}
 		}
 

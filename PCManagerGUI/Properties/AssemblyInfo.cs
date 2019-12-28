@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("PCManager")]
 [assembly: AssemblyDescription("Hlavní grafická aplikace pro PCManager server, Autor: Jiří Falta")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OsobniEu")]
+[assembly: AssemblyCompany("Opencube")]
 [assembly: AssemblyProduct("PCManagerGUI")]
-[assembly: AssemblyCopyright("Copyright © OsobniEu 2017")]
+[assembly: AssemblyCopyright("Copyright © Opencube 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

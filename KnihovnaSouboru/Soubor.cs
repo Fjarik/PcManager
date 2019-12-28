@@ -7,83 +7,91 @@ namespace KnihovnaSouboru
 {
 	public class Soubor
 	{
-		public static readonly int Verze = 113;
+		public const int Verze = 113;
 
-		public string Cesta { get; private set; }
-		public string NazevSouboru { get; private set; }
-		public string CelaCesta { get; private set; }
-		private string[] RadkyS;
-		List<string> RadkyL = new List<string>();
+		public string Cesta { get; }
+		public string NazevSouboru { get; }
+		public string CelaCesta { get; }
+		private string[] _radkyS;
+		private List<string> _radkyL = new List<string>();
 
-		public Soubor(string cesta, string NazevSouboru, bool Prepsat) {
+		public Soubor(string cesta, string nazevSouboru, bool prepsat)
+		{
 			this.Cesta = cesta;
-			this.NazevSouboru = NazevSouboru;
-			this.CelaCesta = cesta + NazevSouboru;
+			this.NazevSouboru = nazevSouboru;
+			this.CelaCesta = cesta + nazevSouboru;
 			if (!Directory.Exists(cesta)) {
 				Directory.CreateDirectory(cesta);
 			}
 			if (!File.Exists(CelaCesta)) {
 				File.Create(CelaCesta).Close();
-				this.Vlozit($"Soubor {NazevSouboru} vytvořen!");
-			} else {
-				if (Prepsat) {
-					File.WriteAllText(CelaCesta, string.Empty);
-				}
+				this.Vlozit($"Soubor {nazevSouboru} vytvořen!");
+				return;
+			}
+
+			if (prepsat) {
+				File.WriteAllText(CelaCesta, string.Empty);
 			}
 		}
 
-		public Soubor(string CelaCesta, bool Prepsat) {
-			this.CelaCesta = CelaCesta;
-			int od = CelaCesta.LastIndexOf('/');
+		public Soubor(string celaCesta, bool prepsat)
+		{
+			this.CelaCesta = celaCesta;
+			int od = celaCesta.LastIndexOf('/');
 			if (od == -1) {
-				od = CelaCesta.LastIndexOf('\\');
+				od = celaCesta.LastIndexOf('\\');
 			}
 
-			this.NazevSouboru = CelaCesta.Substring(od + 1, (CelaCesta.Length - 1 - od));
-			this.Cesta = CelaCesta.Substring(0, NazevSouboru.Length);
+			this.NazevSouboru = celaCesta.Substring(od + 1, (celaCesta.Length - 1 - od));
+			this.Cesta = celaCesta.Substring(0, NazevSouboru.Length);
 
 			if (!Directory.Exists(Cesta)) {
 				Directory.CreateDirectory(Cesta);
 			}
-			if (!File.Exists(CelaCesta)) {
-				File.Create(CelaCesta).Close();
+			if (!File.Exists(celaCesta)) {
+				File.Create(celaCesta).Close();
 				this.Vlozit($"Soubor {NazevSouboru} vytvořen!");
-			} else {
-				if (Prepsat) {
-					File.WriteAllText(CelaCesta, string.Empty);
-				}
+				return;
+			}
+			if (prepsat) {
+				File.WriteAllText(celaCesta, string.Empty);
 			}
 		}
 
-		public void Vlozit(string text) {
-			string vlozit = $"{DateTime.Now} {text}";
+		public void Vlozit(string text)
+		{
+			string vlozit = $"{DateTime.Now}: {text}";
 			File.AppendAllText(CelaCesta, vlozit + Environment.NewLine);
 		}
 
-		public void VlozitBezDate(string text) {
+		public void VlozitBezDate(string text)
+		{
 			File.AppendAllText(CelaCesta, text + Environment.NewLine);
 		}
 
-		public string[] VratS() {
+		public string[] VratS()
+		{
 			this.Precti();
-			return RadkyS;
+			return _radkyS;
 		}
 
-		public List<string> VratL() {
+		public List<string> VratL()
+		{
 			this.Precti();
-			return RadkyL;
+			return _radkyL;
 		}
 
-		private void Precti() {
-			this.RadkyS = File.ReadAllLines(CelaCesta);
-			this.RadkyL = File.ReadLines(CelaCesta).ToList();
+		private void Precti()
+		{
+			this._radkyS = File.ReadAllLines(CelaCesta);
+			this._radkyL = File.ReadLines(CelaCesta).ToList();
 		}
 
-		public void Clear() {
-			this.RadkyL = null;
-			this.RadkyS = null;
+		public void Clear()
+		{
+			this._radkyL = null;
+			this._radkyS = null;
 			File.WriteAllText(CelaCesta, string.Empty);
 		}
-
 	}
 }

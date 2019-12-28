@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("KnihovnaSouboru")]
 [assembly: AssemblyDescription("Základní knihovna programu PCManager pro práci se soubory")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OsobniEu")]
+[assembly: AssemblyCompany("Opencube")]
 [assembly: AssemblyProduct("KnihovnaSouboru")]
-[assembly: AssemblyCopyright("Copyright © OsobniEu 2017")]
+[assembly: AssemblyCopyright("Copyright © Opencube 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

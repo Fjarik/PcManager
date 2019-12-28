@@ -11,12 +11,13 @@ namespace PCManagerGUI
 	static class Program
 	{
 		private static string Registr = @"SOFTWARE\Opencube\PCManager";
-		private static MainFm Mf;
-		public static int Verze = 170429;
-		public static int PotrebnySoubor = 113;
+		private static MainFm _mf;
+		private const int Verze = 170429;
+		private const int PotrebnySoubor = 113;
 
 		[STAThread]
-		static void Main(string[] args) {
+		static void Main(string[] args)
+		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			if (!System.IO.File.Exists(AppDomain.CurrentDomain.BaseDirectory + "KnihovnaSouboru.dll")) {
@@ -33,51 +34,56 @@ namespace PCManagerGUI
 				Application.Exit();
 				return;
 			}
-			string Errors = "";
+			var errors = "";
 			if (KnihovnaSouboru.Soubor.Verze < PotrebnySoubor) {
-				Errors += $"KnihovnaSouboru.dll, Verze: {KnihovnaSouboru.Soubor.Verze}, Minimální potřebná verze: {PotrebnySoubor} {Environment.NewLine}";
+				errors +=
+					$"KnihovnaSouboru.dll, Verze: {KnihovnaSouboru.Soubor.Verze}, Minimální potřebná verze: {PotrebnySoubor} {Environment.NewLine}";
 			}
-			if (Errors != "") {
-				MessageBox.Show($"Aplikace používá zastaralé knihovny: \n {Errors} Aktualizujte je!", "Zastaralé knihovny", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			if (errors != "") {
+				MessageBox.Show($"Aplikace používá zastaralé knihovny: \n {errors} Aktualizujte je!",
+								"Zastaralé knihovny", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Application.Exit();
 				return;
 			}
 			AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-			Mf = new MainFm(spousteni);
+			_mf = new MainFm(spousteni);
 			RegistryKey key = Registry.LocalMachine.OpenSubKey(Registr, true);
 			if (key == null) {
 				key = Registry.LocalMachine.CreateSubKey(Registr);
-				Mf.Log.Vlozit("Složka v registrech byla úspěšně vytvořena");
+				_mf.Log.Vlozit("Složka v registrech byla úspěšně vytvořena");
 			}
-			key.SetValue("ToDo", Mf.ToDo.CelaCesta);
-			key.SetValue("ServerLog", Mf.ServerLog.CelaCesta);
-			key.SetValue("Log", Mf.Log.CelaCesta);
+			key.SetValue("ToDo", _mf.ToDo.CelaCesta);
+			key.SetValue("ServerLog", _mf.ServerLog.CelaCesta);
+			key.SetValue("Log", _mf.Log.CelaCesta);
 			key.SetValue("GUIVersion", Verze);
 			key.SetValue("Location", Application.ExecutablePath);
 			key.SetValue("Localization", "CZ");
-			Mf.Log.Vlozit("Všechny klíče byly uspěšně zapsány do registrů");
+			_mf.Log.Vlozit("Všechny klíče byly uspěšně zapsány do registrů");
 			key.Close();
-			Application.Run(Mf);
+			Application.Run(_mf);
 		}
 
-		static void OnProcessExit(object sender, EventArgs e) {
+		static void OnProcessExit(object sender, EventArgs e)
+		{
 			try {
-				System.ServiceProcess.ServiceController service = new System.ServiceProcess.ServiceController("PCService");
+				System.ServiceProcess.ServiceController service =
+					new System.ServiceProcess.ServiceController("PCService");
 				service.Stop();
 				service.WaitForStatus(System.ServiceProcess.ServiceControllerStatus.Stopped);
 			} catch { }
 		}
 
-		private static string[] NormArgs(string[] args) {
-			string[] New = args;
-			for (int i = 0; i < New.Length; i++) {
-				New[i].Replace("-", "");
-				New[i].Replace("+", "");
-				New[i].Replace("-", "");
-				New[i].Replace("/", "");
-				New[i].Replace("=", "");
+		private static string[] NormArgs(string[] args)
+		{
+			string[] newArgs = args;
+			for (int i = 0; i < newArgs.Length; i++) {
+				newArgs[i] = args[i].Replace("-", "");
+				newArgs[i] = args[i].Replace("+", "");
+				newArgs[i] = args[i].Replace("-", "");
+				newArgs[i] = args[i].Replace("/", "");
+				newArgs[i] = args[i].Replace("=", "");
 			}
-			return New;
+			return newArgs;
 		}
 	}
 }

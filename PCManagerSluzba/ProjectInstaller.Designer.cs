@@ -37,7 +37,7 @@
 			// 
 			// Installer1
 			// 
-			this.Installer1.Description = "Hlavní služba pro PCManager server © OsobniEu, Autor: Jiří Falta";
+			this.Installer1.Description = "Hlavní služba pro PCManager server © Opencube, Autor: Jiří Falta";
 			this.Installer1.DisplayName = "PCManager Služba";
 			this.Installer1.ServiceName = "PCService";
 			// 
